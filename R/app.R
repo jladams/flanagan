@@ -7,7 +7,7 @@ server <- function(input, output) {
   df <- eventReactive(input$idSubmit, {
     gutenberg_download(as.numeric(input$textId), meta_fields = c("title", "author"))
     })
-  output$text <- renderUI({HTML(paste(df()$text, sep = "</br>"))})
+  output$text <- renderPrint({paste(df()$text, sep = "</br>")})
 }
 
 ui <- fluidPage(
@@ -19,7 +19,7 @@ ui <- fluidPage(
       textInput("firstWord", "Type first word:", "First word"),
       actionButton("textSubmit", "Submit Text")
     ),
-    mainPanel(htmlOutput("text"))
+    mainPanel(verbatimTextOutput("text"))
   )
 )
 
