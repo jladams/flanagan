@@ -28,4 +28,4 @@ analyze <- function(work) {
   return(df)
 }
 
-df <- analyze(c(42, 57, 5400, 777, 874))
+records <- analyze(c(42, 57, 5400, 777, 874))
