@@ -5,7 +5,7 @@ library(tidytext)
 
 middle_end <- function(work){
   df <- gutenberg_download(work, meta_fields = c("title", "author"))
-
+  
   words <- df %>%
     unnest_tokens(words, text)
 
@@ -21,4 +21,11 @@ middle_end <- function(work){
   return(df)
 }
 
-df <- middle_end(42)
+analyze <- function(work) {
+  df <- lapply(work, middle_end) %>%
+    bind_rows
+  
+  return(df)
+}
+
+df <- analyze(c(42, 57, 5400, 777, 874))
