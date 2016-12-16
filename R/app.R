@@ -45,7 +45,7 @@ server <- function(input, output) {
   firstWords$df <- read_csv("../data/firsts.csv")
   
   recordNum <- reactiveValues()
-  recordNum$a <- isolate(length(unique(firstWords$df$gutenberg_id)) - 1)
+  recordNum$a <- isolate(length(unique(firstWords$df$gutenberg_id)))
   
   df <- eventReactive(input$textSubmit, {
     gutenberg_download(as.numeric(records$gutenberg_id[recordNum$a - 1]), meta_fields = c("title", "author"))
@@ -53,7 +53,7 @@ server <- function(input, output) {
   
   observeEvent(input$textSubmit, {
     tmp <- data_frame(gutenberg_id = ifelse(!is.null(unique(records$gutenberg_id[recordNum$a - 1])), unique(records$gutenberg_id[recordNum$a - 1]), NA), first = input$firstWord)
-    isolate(firstWords$df <- rbind(firstWords$df, tmp))
+    isolate(firstWords$df <- rbind(firstWords$df, tmp) %>% filter(first != "Click 'Submit Text' to begin"))
     recordNum$a <- recordNum$a + 1
     write_csv(firstWords$df, "../data/firsts.csv")
   })
@@ -71,7 +71,6 @@ ui <- fluidPage(
     sidebarPanel(
       h4("ID Number"),
       textOutput("idNum"),
-#      actionButton("idSubmit", "Submit ID Number"),
       hr(),
       textInput("firstWord", "Type first word:", "Click 'Submit Text' to begin"),
       actionButton("textSubmit", "Submit Text")
