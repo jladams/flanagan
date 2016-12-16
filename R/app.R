@@ -39,8 +39,6 @@ analyze <- function(work) {
 
 server <- function(input, output) {
   
-  newRecords <- reactive({records})
-  
   firstWords <- reactiveValues()
   firstWords$df <- read_csv("../data/firsts.csv")
   
@@ -56,8 +54,13 @@ server <- function(input, output) {
     isolate(firstWords$df <- rbind(firstWords$df, tmp) %>% filter(first != "Click 'Submit Text' to begin"))
     recordNum$a <- recordNum$a + 1
     write_csv(firstWords$df, "../data/firsts.csv")
+    write_csv(newRecords(), "../data/records.csv")
   })
-  
+ 
+  newRecords <- reactive({
+    records %>%
+      left_join(firstWords$df)
+  }) 
   
   
   output$idNum <- renderText({unique(df()$gutenberg_id)})
