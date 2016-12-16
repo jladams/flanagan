@@ -41,20 +41,29 @@ server <- function(input, output) {
   
   newRecords <- reactive({records})
   
+  firstWords <- reactiveValues()
+  firstWords$df <- read_csv("../data/firsts.csv")
+  
   recordNum <- reactiveValues()
+  recordNum$a <- isolate(length(unique(firstWords$df$gutenberg_id)) - 1)
   
   df <- eventReactive(input$textSubmit, {
-    gutenberg_download(as.numeric(records$gutenberg_id[recordNum]), meta_fields = c("title", "author"))
+    gutenberg_download(as.numeric(records$gutenberg_id[recordNum$a - 1]), meta_fields = c("title", "author"))
     })
   
-  recordNum$a <- 1:length(records)
-  
-  eventReactive(input$textSubmit, {
-    recordNum <- recordNum() + 1
+  observeEvent(input$textSubmit, {
+    tmp <- data_frame(gutenberg_id = ifelse(!is.null(unique(records$gutenberg_id[recordNum$a - 1])), unique(records$gutenberg_id[recordNum$a - 1]), NA), first = input$firstWord)
+    isolate(firstWords$df <- rbind(firstWords$df, tmp))
+    recordNum$a <- recordNum$a + 1
+    write_csv(firstWords$df, "../data/firsts.csv")
   })
   
-  output$idNum <- renderText({recordNum()})
+  
+  
+  output$idNum <- renderText({unique(df()$gutenberg_id)})
   output$text <- renderPrint({df()$text})
+  output$data <- renderTable({newRecords()})
+  output$firsts <- renderTable({firstWords$df})
 }
 
 ui <- fluidPage(
@@ -64,10 +73,16 @@ ui <- fluidPage(
       textOutput("idNum"),
 #      actionButton("idSubmit", "Submit ID Number"),
       hr(),
-      textInput("firstWord", "Type first word:", "First word"),
+      textInput("firstWord", "Type first word:", "Click 'Submit Text' to begin"),
       actionButton("textSubmit", "Submit Text")
     ),
-    mainPanel(verbatimTextOutput("text"))
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Text", verbatimTextOutput("text")),
+        tabPanel("Data", tableOutput("data")),
+        tabPanel("First Words", tableOutput("firsts"))
+      )
+    )
   )
 )
 
