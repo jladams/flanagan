@@ -2,3 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
+data/sample/
+.ipynb_checkpoints/

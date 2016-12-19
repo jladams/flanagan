@@ -31,7 +31,9 @@ analyze <- function(work) {
   return(df)
 }
 
-# records <- analyze(c(42, 57, 5400, 777, 874))
+
+# books <- sample(50:600, 10)
+# records <- analyze(books)
 
 
 #--------------------------------------
@@ -50,9 +52,17 @@ server <- function(input, output) {
     })
   
   observeEvent(input$textSubmit, {
-    tmp <- data_frame(gutenberg_id = ifelse(!is.null(unique(records$gutenberg_id[recordNum$a - 1])), unique(records$gutenberg_id[recordNum$a - 1]), NA), first = input$firstWord)
-    isolate(firstWords$df <- rbind(firstWords$df, tmp) %>% filter(first != "Click 'Submit Text' to begin"))
+    tmp <- data_frame(gutenberg_id = ifelse(!is.null(unique(records$gutenberg_id[recordNum$a - 1])), 
+                                            unique(records$gutenberg_id[recordNum$a - 1]), 
+                                            NA), 
+                      first = input$firstWord)
+    
+    isolate(firstWords$df <- rbind(firstWords$df, tmp) %>% 
+              filter(first != "Click 'Submit Text' to begin")
+            )
+    
     recordNum$a <- recordNum$a + 1
+    
     write_csv(firstWords$df, "../data/firsts.csv")
     write_csv(newRecords(), "../data/records.csv")
   })
