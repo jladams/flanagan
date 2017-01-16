@@ -94,4 +94,13 @@ books_by_subject <- function(search) {
   
 }
 
+# Analyze works based on exact match of subject heading
+analyze_by_subject <- function(search) {
+  
+  works <- books_by_subject(search)
+  
+  df <- analyze(works)
+  
+  return(df)
+}
 
