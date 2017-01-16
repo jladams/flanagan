@@ -1,7 +1,7 @@
 library(tidyverse)
 library(gutenbergr)
 library(tidytext)
-
+library(stringi)
 
 middle_end <- function(work){
   df <- gutenberg_download(work, meta_fields = c("title", "author"))
@@ -27,5 +27,26 @@ analyze <- function(work) {
   
   return(df)
 }
+
+
+first_line <- function(work) {
+  df <- gutenberg_download(work, meta_fields = c("title", "author"))
+  
+  lines <- df %>%
+    unnest_tokens(lines, text, token = "lines")
+  
+  for (line in lines$lines) {
+    charsWhite <- stri_stats_latex(line)[3]
+    words <- stri_stats_latex(line)[4]
+    if((words > 10) & ((words - charsWhite) < 2)) {
+      firstLine <- line
+      break
+    }
+  }
+  
+  return(firstLine)
+
+}
+
 
 records <- analyze(c(42, 57, 5400, 777, 874))
