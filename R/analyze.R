@@ -38,7 +38,7 @@ first_line <- function(work) {
   for (line in lines$lines) {
     charsWhite <- stri_stats_latex(line)[3]
     words <- stri_stats_latex(line)[4]
-    if((words > 10) & ((words - charsWhite) < 2)) {
+    if((words > 10) & ((charsWhite - words) < 2)) {
       firstLine <- line
       break
     }
