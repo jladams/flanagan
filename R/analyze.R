@@ -73,14 +73,15 @@ middle_end <- function(df){
 
 # Error handling for downloading books
 download_text <- function(book) {
+  print(paste("Downloading Gutenberg ID", book))
   return(
     tryCatch(gutenberg_download(book, meta_fields = c("title", "author")), 
              error = function(e) {
-               print(paste("Error with Gutenberg ID", book))
+               print(paste("*** Error with Gutenberg ID ***", book))
                return(data_frame(gutenberg_id = integer(), title = character(), author = character(), beginning = character(), end = character()))
                },
              warning = function(e) {
-               print(paste("Warning with Gutenberg ID", book))
+               print(paste("*** Warning with Gutenberg ID ***", book))
                return(data_frame(gutenberg_id = integer(), title = character(), author = character(), beginning = character(), end = character()))
              }
     )
@@ -89,12 +90,15 @@ download_text <- function(book) {
 
 # Error handling for analyzing work
 analyze_work <- function(work) {
+  print(paste("Analyzing Gutenberg ID", work[1,1]))
   return(
     tryCatch(middle_end(work),
              error = function(e) {
+               print(paste("*** Error with Gutenberg ID ***", work[1,1]))
                return(data_frame(gutenberg_id = integer(), title = character(), author = character(), beginning = character(), end = character()))
              },
              warning = function(e) {
+               print(paste("*** Warning with Gutenberg ID ***", work[1,1]))
                return(data_frame(gutenberg_id = integer(), title = character(), author = character(), beginning = character(), end = character()))
              }
     )
@@ -103,7 +107,9 @@ analyze_work <- function(work) {
 
 # Provide a vector of Gutenberg ID numbers to get the first word, middle word, and last sentence
 analyze <- function(work) {
-  
+ 
+  print("Downloading Files")
+   
   # Retrieve a list of dataframes containing the text to be analyzed
   dlist <- lapply(work, download_text)
   
