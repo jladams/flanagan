@@ -42,15 +42,15 @@ first_word <- function(df) {
 
 # Get middle word and last sentence
 middle_end <- function(df){
-
+    
   # Tokenize work into individual words  
   words <- df %>%
     unnest_tokens(words, text)
-
+  
   # Tokenize work into sentences
   sentences <- df %>%
     unnest_tokens(sentences, text, token = "sentences")
-
+  
   # Run first_word() on work to get the beginning
   beginning <- first_word(df)
   
@@ -67,18 +67,48 @@ middle_end <- function(df){
   
   # Rename columns appropriately
   colnames(df) <- c("gutenberg_id", "title", "author", "beginning", "middle", "end")
-  
+    
   return(df)
+}
+
+# Error handling for downloading books
+download_text <- function(book) {
+  return(
+    tryCatch(gutenberg_download(book, meta_fields = c("title", "author")), 
+             error = function(e) {
+               print(paste("Error with Gutenberg ID", book))
+               return(data_frame(gutenberg_id = integer(), title = character(), author = character(), beginning = character(), end = character()))
+               },
+             warning = function(e) {
+               print(paste("Warning with Gutenberg ID", book))
+               return(data_frame(gutenberg_id = integer(), title = character(), author = character(), beginning = character(), end = character()))
+             }
+    )
+  )
+}
+
+# Error handling for analyzing work
+analyze_work <- function(work) {
+  return(
+    tryCatch(middle_end(work),
+             error = function(e) {
+               return(data_frame(gutenberg_id = integer(), title = character(), author = character(), beginning = character(), end = character()))
+             },
+             warning = function(e) {
+               return(data_frame(gutenberg_id = integer(), title = character(), author = character(), beginning = character(), end = character()))
+             }
+    )
+  )
 }
 
 # Provide a vector of Gutenberg ID numbers to get the first word, middle word, and last sentence
 analyze <- function(work) {
   
   # Retrieve a list of dataframes containing the text to be analyzed
-  dlist <- lapply(work, gutenberg_download, meta_fields = c("title", "author"))
+  dlist <- lapply(work, download_text)
   
   # Apply the middle_end() function to each and then bind the list together to create a single dataframe of results
-  df <- lapply(dlist, middle_end) %>%
+  df <- lapply(dlist, analyze_work) %>%
     bind_rows()
   
   return(df)
@@ -103,4 +133,8 @@ analyze_by_subject <- function(search) {
   
   return(df)
 }
+
+
+
+
 
