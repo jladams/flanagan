@@ -5,6 +5,11 @@ library(stringi)
 library(stringr)
 
 # Get first line of work based on word count of line vs. number of blank characters
+# Accepts a dataframe containing a variable called "text" as occurs in the gutenbergr package
+# Returns a tibble with the row of data containing the first line of body text (as detected by the function)
+# df = data frame to be analyzed, no default 
+# wordCount = minimum number of words in line considered for the first line, default is 9
+# diff = minimum difference between number of words and number of white spaces in line considered for first line, default is 3
 first_line <- function(df, wordCount = 9, diff = 3) {
   
   lines <- df %>%
@@ -30,6 +35,11 @@ first_line <- function(df, wordCount = 9, diff = 3) {
 
 
 # Get first word of first line
+# Accepts a dataframe containing a variable called "text" as occurs in the gutenbergr package
+# Returns a tibble with the first word of the first line as detected by first_line()
+# df = data frame to be analyzed, no default 
+# wordCount = passed to first_line()
+# diff = passed to first_line()
 first_word <- function(df, wordCount = 9, diff = 3) {
   
   fword <- first_line(df, wordCount, diff) %>%
@@ -40,7 +50,12 @@ first_word <- function(df, wordCount = 9, diff = 3) {
   
 }
 
-# Get middle word and last sentence
+# Get first word, middle word, and last sentence of a work
+# Accepts a dataframe containing variables "gutenberg_id", "title", "author", "text" as occurs in the gutenbergr package
+# Returns a tibble with beginning, middle, and end 
+# df = data frame to be analyzed, no default 
+# wordCount = passed to first_line()
+# diff = passed to first_line()
 middle_end <- function(df, wordCount = 9, diff = 3){
     
   # Tokenize work into individual words  
@@ -72,6 +87,8 @@ middle_end <- function(df, wordCount = 9, diff = 3){
 }
 
 # Error handling for downloading books
+# Downloads text with title and author metadata, assigns global variable name to downloaded text, passes errors and warnings
+# Accepts gutenberg ID number
 download_text <- function(book) {
   print(paste("Downloading Gutenberg ID", book))
   return(
@@ -90,6 +107,11 @@ download_text <- function(book) {
 }
 
 # Error handling for analyzing work
+# Accepts a dataframe containing variables "gutenberg_id", "title", "author", "text" as occurs in the gutenbergr package
+# Returns a tibble with beginning, middle, and end 
+# df = data frame to be analyzed, no default 
+# wordCount = passed to first_line()
+# diff = passed to first_line()
 analyze_work <- function(work, wordCount = 9, diff = 3) {
   print(paste("Analyzing Gutenberg ID", work[1,1]))
   return(
@@ -107,6 +129,12 @@ analyze_work <- function(work, wordCount = 9, diff = 3) {
 }
 
 # Provide a vector of Gutenberg ID numbers to get the first word, middle word, and last sentence
+# Accepts a vector containing Gutenberg ID numbers
+# Returns a tibble with beginning, middle, and end
+# Automatically saves downloaded texts as variables
+# work = vector of Gutenberg ID numbers, no default
+# wordCount = passed to first_line()
+# diff = passed to first_line()
 analyze <- function(work, wordCount = 9, diff = 3) {
  
   print("Downloading Files")
@@ -122,6 +150,9 @@ analyze <- function(work, wordCount = 9, diff = 3) {
 }
 
 # Get vector of Gutenberg ID numbers by exact subject
+# Accepts a LCSH or LCC subject heading as found in gutenberg_subjects as a character string
+# Returns a vector of Gutenberg ID numbers matching the subject heading
+# search = character string of LCSH or LCC subject heading
 books_by_subject <- function(search) {
   
   subs <- gutenberg_subjects %>%
@@ -132,6 +163,11 @@ books_by_subject <- function(search) {
 }
 
 # Analyze works based on exact match of subject heading
+# Accepts a LCSH or LCC subject heading as found in gutenberg_subjects as a character string
+# Returns a tibble containting gutenberg_id, title, author, beginning, middle, and end of all works matching provided subject heading
+# search = character string of LCSH or LCC subject heading
+# wordCount = passed to first_line()
+# diff = passed to first_line()
 analyze_by_subject <- function(search, wordCount = 9, diff = 3) {
   
   works <- books_by_subject(search)
