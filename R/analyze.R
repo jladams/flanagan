@@ -130,12 +130,13 @@ analyze_work <- function(work, wordCount = 9, diff = 3) {
 
 # Provide a vector of Gutenberg ID numbers to get the first word, middle word, and last sentence
 # Accepts a vector containing Gutenberg ID numbers
-# Returns a tibble with beginning, middle, and end
+# Returns a tibble with beginning, middle, and end - and list containing downloaded texts
 # Automatically saves downloaded texts as variables
 # work = vector of Gutenberg ID numbers, no default
+# listName = character string to call list that contains downloaded works, default is "works"
 # wordCount = passed to first_line()
 # diff = passed to first_line()
-analyze <- function(work, wordCount = 9, diff = 3) {
+analyze <- function(work, listName = "works", wordCount = 9, diff = 3) {
  
   print("Downloading Files")
    
@@ -145,7 +146,13 @@ analyze <- function(work, wordCount = 9, diff = 3) {
   # Apply the middle_end() function to each and then bind the list together to create a single dataframe of results
   df <- lapply(dlist, analyze_work, wordCount, diff) %>%
     bind_rows()
+
+  # Put all works into a single list for cleanliness
+  assign(listName, mget(ls(pattern = "gutenberg_*", envir = .GlobalEnv), envir = .GlobalEnv), envir = .GlobalEnv)
   
+  # Remove all works from environment (still accessible through "works")
+  rm(list = ls(pattern = "gutenberg_*", envir = .GlobalEnv), envir = .GlobalEnv)
+    
   return(df)
 }
 
@@ -166,18 +173,16 @@ books_by_subject <- function(search) {
 # Accepts a LCSH or LCC subject heading as found in gutenberg_subjects as a character string
 # Returns a tibble containting gutenberg_id, title, author, beginning, middle, and end of all works matching provided subject heading
 # search = character string of LCSH or LCC subject heading
+# listName = passed to analyze()
 # wordCount = passed to first_line()
 # diff = passed to first_line()
-analyze_by_subject <- function(search, wordCount = 9, diff = 3) {
+analyze_by_subject <- function(search, listName = "works", wordCount = 9, diff = 3) {
   
   works <- books_by_subject(search)
   
-  df <- analyze(works, wordCount, diff)
+  df <- analyze(works, listName, wordCount, diff)
   
   return(df)
 }
-
-View(gutenberg_subjects)
-
 
 
