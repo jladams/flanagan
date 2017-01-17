@@ -30,9 +30,9 @@ first_line <- function(df, wordCount = 9, diff = 3) {
 
 
 # Get first word of first line
-first_word <- function(df) {
+first_word <- function(df, wordCount = 9, diff = 3) {
   
-  fword <- first_line(df) %>%
+  fword <- first_line(df, wordCount, diff) %>%
     mutate(beginning = word(lines)) %>%
     select(-lines)
 
@@ -41,7 +41,7 @@ first_word <- function(df) {
 }
 
 # Get middle word and last sentence
-middle_end <- function(df){
+middle_end <- function(df, wordCount = 9, diff = 3){
     
   # Tokenize work into individual words  
   words <- df %>%
@@ -52,7 +52,7 @@ middle_end <- function(df){
     unnest_tokens(sentences, text, token = "sentences")
   
   # Run first_word() on work to get the beginning
-  beginning <- first_word(df)
+  beginning <- first_word(df, wordCount, diff)
   
   # Find the word in the middle
   middle <- words[length(words$words)/2, ]
@@ -75,7 +75,8 @@ middle_end <- function(df){
 download_text <- function(book) {
   print(paste("Downloading Gutenberg ID", book))
   return(
-    tryCatch(gutenberg_download(book, meta_fields = c("title", "author")), 
+    tryCatch(
+      assign(paste0("gutenberg_", book), gutenberg_download(book, meta_fields = c("title", "author")), envir = .GlobalEnv),
              error = function(e) {
                print(paste("*** Error with Gutenberg ID ***", book))
                return(data_frame(gutenberg_id = integer(), title = character(), author = character(), beginning = character(), end = character()))
@@ -89,10 +90,10 @@ download_text <- function(book) {
 }
 
 # Error handling for analyzing work
-analyze_work <- function(work) {
+analyze_work <- function(work, wordCount = 9, diff = 3) {
   print(paste("Analyzing Gutenberg ID", work[1,1]))
   return(
-    tryCatch(middle_end(work),
+    tryCatch(middle_end(work, wordCount, diff),
              error = function(e) {
                print(paste("*** Error with Gutenberg ID ***", work[1,1]))
                return(data_frame(gutenberg_id = integer(), title = character(), author = character(), beginning = character(), end = character()))
@@ -106,7 +107,7 @@ analyze_work <- function(work) {
 }
 
 # Provide a vector of Gutenberg ID numbers to get the first word, middle word, and last sentence
-analyze <- function(work) {
+analyze <- function(work, wordCount = 9, diff = 3) {
  
   print("Downloading Files")
    
@@ -114,7 +115,7 @@ analyze <- function(work) {
   dlist <- lapply(work, download_text)
   
   # Apply the middle_end() function to each and then bind the list together to create a single dataframe of results
-  df <- lapply(dlist, analyze_work) %>%
+  df <- lapply(dlist, analyze_work, wordCount, diff) %>%
     bind_rows()
   
   return(df)
@@ -131,16 +132,16 @@ books_by_subject <- function(search) {
 }
 
 # Analyze works based on exact match of subject heading
-analyze_by_subject <- function(search) {
+analyze_by_subject <- function(search, wordCount = 9, diff = 3) {
   
   works <- books_by_subject(search)
   
-  df <- analyze(works)
+  df <- analyze(works, wordCount, diff)
   
   return(df)
 }
 
-
+View(gutenberg_subjects)
 
 
 
